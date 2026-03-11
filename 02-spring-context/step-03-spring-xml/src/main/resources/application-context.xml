@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+                           https://www.springframework.org/schema/beans/spring-beans.xsd">
+
+  <bean id="storage" class="lecture.step03.storage.InMemoryStorage"/>
+  <!-- prod alternative:
+  <bean id="storage" class="lecture.step03.storage.JdbcStorage">
+    <constructor-arg ref="dataSource"/>
+  </bean>
+  -->
+
+  <bean id="dataSource" class="lecture.step03.storage.DataSource"/>
+
+  <!-- Repository -->
+  <bean id="repo" class="lecture.step03.repo.DbCategoryRepository">
+    <constructor-arg ref="storage"/>
+  </bean>
+<!--  <bean id="repo" class="lecture.step03.repo.DbCategoryRepository">-->
+<!--    <property name="storage" ref="storage"/>-->
+<!--  </bean>-->
+
+
+
+
+  <!-- Strategy #2: Validator -->
+  <bean id="validator" class="lecture.step03.service.validator.LenientCategoryValidator"/>
+  <!-- <bean id="validator" class="lecture.step03.service.StrictCategoryValidator"/> -->
+
+  <!-- Service -->
+  <bean id="service" class="lecture.step03.service.CategoryService">
+    <constructor-arg ref="repo"/>
+    <constructor-arg ref="validator"/>
+  </bean>
+
+  <!-- IOService -->
+  <bean id="io" class="lecture.step03.service.io.ConsoleIoService"/>
+
+  <!-- Controller -->
+  <bean id="controller" class="lecture.step03.controller.CategoryController">
+    <constructor-arg ref="service"/>
+    <constructor-arg ref="io"/>
+  </bean>
+
+  <!-- Profiles -->
+
+<!--  <beans profile="dev">-->
+<!--    <bean id="validator" class="lecture.step03.service.LenientCategoryValidator"/>-->
+<!--  </beans>-->
+
+<!--  <beans profile="prod">-->
+<!--    <bean id="validator" class="lecture.step03.service.StrictCategoryValidator"/>-->
+<!--  </beans>-->
+
+</beans>
