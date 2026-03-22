@@ -1,0 +1,5 @@
+hello
+
+user-info --name Admin --age 30 --email admin@example.com
+
+show-users

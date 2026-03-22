@@ -1,0 +1,11 @@
+spring:
+  shell:
+    interactive:
+      enabled: true
+    noninteractive:
+      enabled: true
+    script:
+      enabled: true
+    history:
+      enabled: true
+      name: .shell_history
