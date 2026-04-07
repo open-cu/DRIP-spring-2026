@@ -1,0 +1,28 @@
+CREATE TABLE IF NOT EXISTS venue (
+    id   BIGINT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(100) NOT NULL UNIQUE
+);
+
+CREATE TABLE IF NOT EXISTS article (
+    id       BIGINT AUTO_INCREMENT PRIMARY KEY,
+    title    VARCHAR(255) NOT NULL UNIQUE,
+    text     TEXT,
+    venue_id BIGINT REFERENCES venue(id)
+);
+
+CREATE TABLE IF NOT EXISTS author (
+    id   BIGINT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(255) NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS article_author (
+    article_id BIGINT NOT NULL REFERENCES article(id) ON DELETE CASCADE,
+    author_id  BIGINT NOT NULL REFERENCES author(id),
+    PRIMARY KEY (article_id, author_id)
+);
+
+CREATE TABLE IF NOT EXISTS article_review (
+    id         BIGINT AUTO_INCREMENT PRIMARY KEY,
+    text       TEXT NOT NULL,
+    article_id BIGINT NOT NULL REFERENCES article(id) ON DELETE CASCADE
+);
