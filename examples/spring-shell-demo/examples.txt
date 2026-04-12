@@ -1,0 +1,86 @@
+# Примеры вызовов команд Spring Shell (интерактивный режим: после приглашения shell:>)
+# Нумерация соответствует классам ExampleNN в проекте.
+# Неинтерактивно: java -jar spring-shell-demo.jar --command "<строка команды>"
+
+# --- Example01HelloCommand ---
+hello
+
+# --- Example02UserCommand ---
+user-info --name Ivan --age 25 --email ivan@example.com
+user-info -n Guest -a 18 -e petrov@example.com
+
+# --- Example03TypedParametersCommand ---
+calc --a 10 --b 20.5 --multiplier 2.5
+date-info --date 2024-03-22 --enabled true
+file-info --file "scripts/demo-script.txt"
+
+# --- Example04TextOutputCommand ---
+greet --name Alice
+multiline
+
+# --- Example05TableOutputCommand ---
+show-users
+show-products
+
+# --- Example06AvailabilityCommand ---
+login --username admin --password secret
+logout
+secret
+status
+
+# --- Example07ModernUserCommand ---
+m-user-info --name Ivan --age 25 --email ivan@example.com
+m-user-info -n Guest -a 18 -e petrov@example.com
+
+# --- Example08ModernTypedParametersCommand ---
+m-calc --a 10 --b 20.5 --multiplier 2.5
+m-date-info --date 2024-03-22 --enabled true
+m-file-info --file "scripts/demo-script.txt"
+m-process-ids --ids 1,2,3
+
+# --- Example09ModernTextOutputCommand ---
+m-greet --name Alice
+m-greet -n Alice
+m-multiline
+
+# --- Example10ModernTableOutputCommand ---
+m-show-users
+m-show-products
+
+# --- Example11ModernAvailabilityCommand ---
+m-login --username admin --password secret
+m-logout
+m-secret
+m-status
+
+# --- Example12UserCommandRegistration (programmatic reg-*) ---
+reg-user-info --name Ivan --age 25 --email ivan@example.com
+reg-user-info -n Guest -a 18 -e petrov@example.com
+
+# --- Example13TypedParametersRegistration ---
+reg-calc --a 10 --b 20.5 --multiplier 2.5
+reg-date-info --date 2024-03-22 --enabled true
+reg-file-info --file "scripts/demo-script.txt"
+reg-process-ids --ids 1,2,3
+
+# --- Example14TextOutputRegistration ---
+reg-greet --name Alice
+reg-greet -n Alice
+reg-multiline
+
+# --- Example15TableOutputRegistration ---
+reg-show-users
+reg-show-products
+
+# --- Example16AvailabilityRegistration ---
+reg-login --username admin --password secret
+reg-logout
+reg-secret
+reg-status
+
+# --- Example17ModeAwareCommand ---
+mode-info
+smart-greet --name User
+
+
+script --file "scripts/demo-script.txt"

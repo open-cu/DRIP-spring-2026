@@ -1,0 +1,26 @@
+CREATE TABLE IF NOT EXISTS article (
+    id     BIGINT AUTO_INCREMENT PRIMARY KEY,
+    title  VARCHAR(255) NOT NULL UNIQUE,
+    text   TEXT,
+    status VARCHAR(20)  NOT NULL DEFAULT 'DRAFT'
+);
+
+CREATE TABLE IF NOT EXISTS author (
+    id    BIGINT AUTO_INCREMENT PRIMARY KEY,
+    name  VARCHAR(255) NOT NULL,
+    email VARCHAR(255) NOT NULL UNIQUE
+);
+
+CREATE TABLE IF NOT EXISTS article_author (
+    article_id BIGINT NOT NULL REFERENCES article(id) ON DELETE CASCADE,
+    author_id  BIGINT NOT NULL REFERENCES author(id),
+    PRIMARY KEY (article_id, author_id)
+);
+
+CREATE TABLE IF NOT EXISTS outbox_event (
+    id          BIGINT AUTO_INCREMENT PRIMARY KEY,
+    event_type  VARCHAR(100) NOT NULL,
+    payload     TEXT,
+    created_at  TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    processed   BOOLEAN NOT NULL DEFAULT FALSE
+);
