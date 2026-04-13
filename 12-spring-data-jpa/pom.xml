@@ -5,17 +5,20 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>ru.tbank</groupId>
-    <artifactId>11-hibernate</artifactId>
+    <artifactId>12-spring-data-jpa</artifactId>
     <version>1.0</version>
 
     <packaging>pom</packaging>
 
     <modules>
-        <module>spring-hiber-context-demo1</module>
-        <module>spring-hiber-context-demo2</module>
-        <module>spring-hiber-context-demo3</module>
-        <module>spring-hiber-context-demo4</module>
-        <module>spring-hiber-context-demo5</module>
-        <module>spring-hiber-context-demo6</module>
+        <module>spring-data-jpa-demo1</module>
+        <module>spring-data-jpa-demo2</module>
+        <module>spring-data-jpa-demo3</module>
+        <module>spring-data-jpa-demo4</module>
+        <module>spring-data-jpa-demo5</module>
+        <module>spring-data-jpa-demo6</module>
+        <module>spring-data-jpa-demo7</module>
+        <module>spring-data-jpa-demo8</module>
+        <module>spring-data-jpa-demo9</module>
     </modules>
 </project>
