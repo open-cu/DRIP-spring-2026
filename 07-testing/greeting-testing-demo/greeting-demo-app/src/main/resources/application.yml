@@ -1,0 +1,18 @@
+greeting:
+  name: "DRIP"
+  language: "en"
+
+feature:
+  notify: false
+  experimental: false
+
+demo:
+  locale: "en"
+  tags: [boot, conditional, profiles, i18n]
+  meta:
+    source: "lecture-6"
+    topic: "spring-boot"
+
+spring:
+  messages:
+    fallback-to-system-locale: false

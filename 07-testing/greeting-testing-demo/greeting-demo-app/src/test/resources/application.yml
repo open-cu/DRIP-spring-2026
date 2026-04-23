@@ -1,0 +1,17 @@
+greeting:
+  name: "Test Student"
+  language: "ru"
+
+demo:
+  locale: "ru"
+  tags: [tests, boot, context]
+  meta:
+    source: "test-resources"
+    topic: "spring-testing"
+
+feature:
+  notify: false
+
+spring:
+  messages:
+    fallback-to-system-locale: false
