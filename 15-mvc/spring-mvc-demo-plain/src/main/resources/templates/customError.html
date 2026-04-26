@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+    <link rel="stylesheet" href="../static/css/style.css" th:href="@{/css/style.css}" />
+    <title>Error</title>
+</head>
+<body>
+    <h1>Error</h1>
+    <div>
+        Error text: <span class="error-text" th:text="${errorText}">Error text</span>
+    </div>
+
+    <p><a href="articles/list.html" th:href="@{/articles}">Back to Articles List</a></p>
+</body>
+</html>

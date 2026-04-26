@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<!--suppress HtmlUnknownAttribute, HtmlRequiredLangAttribute -->
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Article View</title>
+    <link rel="stylesheet" href="../../static/css/style.css" th:href="@{/css/style.css}"/>
+</head>
+<body>
+<h1 th:text="${article.title}">Article Title</h1>
+
+<p><a href="list.html" th:href="@{/articles}" th:text="#{back-to-articles-list}">Back to Articles List</a></p>
+
+<div th:object="${article}">
+    <div class="form-row">
+        <strong th:text="#{id-field}">ID:</strong> <span th:text="*{id}"></span>
+    </div>
+    <div class="form-row">
+        <strong th:text="#{title-field}">Title:</strong> <span th:text="*{title}"></span><br/>
+    </div>
+    <div class="form-row">
+        <strong th:text="#{authors-field-readonly}">Authors:</strong>
+        <br/>
+        <ul>
+            <li th:each="author : *{authors}" th:text="${author.name}">Author Name</li>
+        </ul>
+    </div>
+    <div class="form-row">
+        <strong th:text="#{journal-field}">Journal:</strong> <span th:text="*{journal != null ? journal.name : 'N/A'}"></span>
+    </div>
+</div>
+
+<p><a href="edit.html" th:href="@{/articles/edit/{id}(id=${article.id})}" th:text="#{edit-article}">Edit Article</a></p>
+</body>
+</html>

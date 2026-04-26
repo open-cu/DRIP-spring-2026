@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<!--suppress HtmlUnknownAttribute, HtmlRequiredLangAttribute -->
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Articles</title>
+    <link rel="stylesheet" href="../../static/css/style.css" th:href="@{/css/style.css}" />
+</head>
+<body>
+    <h1>All Articles</h1>
+
+    <p><a href="edit.html" th:href="@{/articles/new}">Create New Article</a></p>
+    <p>
+        <a href="../authors/list.html" th:href="@{/authors}">Go to Authors</a>
+        |
+        <a href="../journals/list.html" th:href="@{/journals}">Go to Journals</a>
+    </p>
+
+    <table>
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Title</th>
+                <th>Author(s)</th>
+                <th>Journal</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr th:each="article : ${articles}" th:object="${article}">
+                <td th:text="*{id}">1</td>
+                <td><a href="view.html" th:href="@{/articles/{id}(id=*{id})}" th:text="*{title}">Шаблонная статья</a></td>
+                <td>
+                    <span th:each="author, stat : *{authors}">
+                        <span th:text="${author.name}">Шаблонный автор</span><span th:if="${!stat.last}">, </span>
+                    </span>
+                </td>
+                <td th:text="*{journal.name}">Шаблонный журнал</td>
+                <td>
+                    <a href="edit.html" th:href="@{/articles/edit/{id}(id=*{id})}">Edit</a> |
+                    <form action="list.html" th:action="@{/articles/{id}(id=*{id})}" th:method="post" style="display:inline;">
+                        <input type="hidden" name="_method" value="delete" />
+                        <button type="submit" class="link-button">Delete</button>
+                    </form>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+
+    <p><a href="edit.html" th:href="@{/articles/new}">Create New Article</a></p>
+</body>
+</html>

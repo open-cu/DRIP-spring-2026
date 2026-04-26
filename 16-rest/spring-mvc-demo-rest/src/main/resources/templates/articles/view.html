@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<!--suppress HtmlUnknownAttribute, HtmlRequiredLangAttribute -->
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Article View</title>
+    <link rel="stylesheet" href="../../static/css/style.css" th:href="@{/css/style.css}"/>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/sockjs-client/1.5.2/sockjs.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/stomp.js/2.3.3/stomp.min.js"></script>
+    <script th:inline="javascript">
+        const articleId = [[${articleId}]];
+    </script>
+</head>
+<body>
+<h1 id="article-title">Article Title</h1>
+
+<p><a href="list.html" th:href="@{/articles}">Back to Articles List</a></p>
+
+<div id="article-details">
+    <div class="form-row">
+        <strong>ID:</strong> <span id="article-id"></span>
+    </div>
+    <div class="form-row">
+        <strong>Title:</strong> <span id="article-title-display"></span><br/>
+    </div>
+    <div class="form-row">
+        <strong>Authors:</strong>
+        <br/>
+        <ul id="article-authors">
+            <li>Author Name</li>
+        </ul>
+    </div>
+    <div class="form-row">
+        <strong>Journal:</strong> <span id="article-journal"></span>
+    </div>
+</div>
+
+<h2>Comments</h2>
+<div id="comments-section">
+    <form id="comment-form">
+        <textarea id="comment-content" placeholder="Enter your comment..." required></textarea><br/>
+        <button type="submit">Add Comment</button>
+    </form>
+    <br/>
+    <table id="comments-table">
+        <thead>
+        <tr>
+            <th>ID</th>
+            <th>Name</th>
+            <th>Actions</th>
+        </tr>
+        </thead>
+        <tbody id="comments-body">
+        <!-- Comments will be populated via ws -->
+        </tbody>
+    </table>
+
+</div>
+
+<p><a href="edit.html" id="edit-link">Edit Article</a></p>
+
+<script th:src="@{/js/articles-view.js}"></script>
+<script th:src="@{/js/comments-websocket.js}"></script>
+</body>
+</html>

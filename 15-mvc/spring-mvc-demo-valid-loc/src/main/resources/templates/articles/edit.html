@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<!--suppress HtmlUnknownAttribute, HtmlRequiredLangAttribute -->
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title th:text="${action == 'create'} ? #{create-new-article} : #{edit-article}"></title>
+    <link rel="stylesheet" href="../../static/css/style.css" th:href="@{/css/style.css}" />
+</head>
+<body>
+    <h1 th:text="${action == 'create'} ? #{create-new-article} : #{edit-article}">Article Edit Form</h1>
+
+    <p><a href="list.html" th:href="@{/articles}" th:text="#{back-to-articles-list}">Back to Articles List</a></p>
+
+    <form th:action="@{/articles}" method="post" th:object="${article}">
+        <input type="hidden" th:field="*{id}" />
+        <div class = "form-row">
+            <label for="title" th:text="#{title-field}">Title:</label>
+            <br/>
+            <input type="text" id="title" value="Шаблонная статья" th:field="*{title}" />
+            <div class="error-text" th:if="${updateDto != null && #fields.hasErrors('${updateDto.title}')}"
+                 th:errors="${updateDto.title}">Wrong article title error</div>
+        </div>
+        <div class = "form-row">
+            <label for="authors" th:text="#{authors-field}">Authors (select multiple):</label>
+            <br/>
+            <select id="authors" th:name="authors" multiple>
+                <option th:each="author : ${authors}"
+                        th:value="${author.id}"
+                        th:text="${author.name}"
+                        th:selected="${article.authors != null and #lists.contains(article.authors, author)}">
+                    Шаблонный автор
+                </option>
+            </select>
+            <div class="error-text" th:if="${updateDto != null && #fields.hasErrors('${updateDto.authors}')}"
+                 th:errors="${updateDto.authors}">Wrong article authors error</div>
+        </div>
+        <div class = "form-row">
+            <label for="journal" th:text="#{journal-field}">Journal:</label>
+            <br/>
+            <select id="journal" th:name="journal">
+                <option th:each="journal : ${journals}"
+                        th:value="${journal.id}"
+                        th:text="${journal.name}"
+                        th:selected="${article.journal != null && article.journal.equals(journal)}">
+                    Шаблонный журнал
+                </option>
+            </select>
+            <div class="error-text" th:if="${updateDto != null && #fields.hasErrors('${updateDto.journal}')}"
+                 th:errors="${updateDto.journal}">Wrong article journal error</div>
+        </div>
+        <button type="submit" th:text="#{save-button}">Save</button>
+    </form>
+    <p><a href="list.html" th:href="@{/articles}" th:text="#{back-to-articles-list}">Back to Articles List</a></p>
+</body>
+</html>

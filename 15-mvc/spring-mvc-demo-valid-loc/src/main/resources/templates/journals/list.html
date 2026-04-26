@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<!--suppress HtmlUnknownAttribute, HtmlRequiredLangAttribute -->
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title th:text="#{all-journals}">Journals</title>
+    <link rel="stylesheet" href="../../static/css/style.css" th:href="@{/css/style.css}" />
+</head>
+<body>
+    <h1 th:text="#{all-journals}">All Journals</h1>
+
+    <p><a href="../articles/list.html" th:href="@{/articles}" th:text="#{back-to-articles-list}">Back to Articles List</a></p>
+    <table>
+        <thead>
+            <tr>
+                <th th:text="#{id-column}">ID</th>
+                <th th:text="#{name-column}">Name</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr th:each="journal : ${journals}">
+                <td th:text="${journal.id}"></td>
+                <td th:text="${journal.name}"></td>
+            </tr>
+        </tbody>
+    </table>
+
+    <p><a href="../articles/list.html" th:href="@{/articles}" th:text="#{back-to-articles-list}">Back to Articles List</a></p>
+</body>
+</html>
