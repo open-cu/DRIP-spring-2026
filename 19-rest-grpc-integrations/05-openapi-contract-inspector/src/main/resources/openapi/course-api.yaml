@@ -1,0 +1,201 @@
+openapi: 3.0.3
+info:
+  title: Course Provider API
+  version: 1.0.0
+  description: Учебный контракт API для демонстрации Spring и OpenAPI.
+servers:
+  - url: http://localhost:8081
+    description: Local demo server
+tags:
+  - name: Courses
+    description: Каталог курсов
+  - name: Enrollments
+    description: Запись студентов на курсы
+  - name: Notifications
+    description: Поток событий платформы
+paths:
+  /api/courses:
+    get:
+      tags:
+        - Courses
+      operationId: listCourses
+      summary: Получить список курсов
+      responses:
+        '200':
+          description: Список курсов успешно получен
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Course'
+  /api/courses/{id}:
+    get:
+      tags:
+        - Courses
+      operationId: getCourse
+      summary: Получить курс по идентификатору
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Идентификатор курса
+          schema:
+            type: string
+          example: spring-rest
+      responses:
+        '200':
+          description: Курс найден
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Course'
+        '404':
+          description: Курс не найден
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetail'
+  /api/enrollments:
+    post:
+      tags:
+        - Enrollments
+      operationId: createEnrollment
+      summary: Записать студента на курс
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EnrollmentRequest'
+      responses:
+        '201':
+          description: Студент записан на курс
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EnrollmentResponse'
+        '400':
+          description: Некорректный запрос
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetail'
+        '404':
+          description: Курс не найден
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetail'
+  /api/notifications:
+    get:
+      tags:
+        - Notifications
+      operationId: streamNotifications
+      summary: Получить короткий stream событий
+      responses:
+        '200':
+          description: SSE stream событий
+          content:
+            text/event-stream:
+              schema:
+                $ref: '#/components/schemas/NotificationEvent'
+components:
+  schemas:
+    Course:
+      type: object
+      required:
+        - id
+        - title
+        - durationHours
+        - status
+      properties:
+        id:
+          type: string
+          example: spring-rest
+        title:
+          type: string
+          example: Spring HTTP Clients
+        durationHours:
+          type: integer
+          format: int32
+          example: 18
+        status:
+          $ref: '#/components/schemas/CourseStatus'
+    CourseStatus:
+      type: string
+      enum:
+        - OPEN
+        - FULL
+        - ARCHIVED
+      example: OPEN
+    EnrollmentRequest:
+      type: object
+      required:
+        - courseId
+        - studentEmail
+      properties:
+        courseId:
+          type: string
+          example: spring-rest
+        studentEmail:
+          type: string
+          format: email
+          example: student@example.edu
+    EnrollmentResponse:
+      type: object
+      required:
+        - enrollmentId
+        - courseId
+        - studentEmail
+        - createdAt
+      properties:
+        enrollmentId:
+          type: string
+          example: enr-7f3c2a
+        courseId:
+          type: string
+          example: spring-rest
+        studentEmail:
+          type: string
+          format: email
+          example: student@example.edu
+        createdAt:
+          type: string
+          format: date-time
+    NotificationEvent:
+      type: object
+      required:
+        - type
+        - message
+        - createdAt
+      properties:
+        type:
+          type: string
+          example: COURSE_UPDATED
+        message:
+          type: string
+          example: Course spring-rest was updated
+        createdAt:
+          type: string
+          format: date-time
+    ProblemDetail:
+      type: object
+      properties:
+        type:
+          type: string
+          example: about:blank
+        title:
+          type: string
+          example: Course not found
+        status:
+          type: integer
+          format: int32
+          example: 404
+        detail:
+          type: string
+          example: Course 'missing-course' was not found
+        instance:
+          type: string
+          example: /api/courses/missing-course
+

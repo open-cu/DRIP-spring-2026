@@ -1,0 +1,13 @@
+spring:
+  application:
+    name: restclient-client
+  main:
+    web-application-type: none
+
+provider:
+  base-url: http://localhost:8081
+
+logging:
+  level:
+    root: WARN
+

@@ -1,0 +1,53 @@
+syntax = "proto3";
+
+package course;
+
+option java_multiple_files = true;
+option java_package = "edu.course.grpc.proto";
+option java_outer_classname = "CourseCatalogProto";
+
+service CourseCatalogService {
+  // Unary RPC: один request -> один response.
+  rpc GetCourse(GetCourseRequest) returns (Course) {}
+  rpc ListCourses(ListCoursesRequest) returns (ListCoursesResponse) {}
+  // Server streaming RPC: один request -> поток CourseEvent.
+  rpc WatchCourseEvents(WatchCourseEventsRequest) returns (stream CourseEvent) {}
+}
+
+message GetCourseRequest {
+  string id = 1;
+}
+
+message ListCoursesRequest {
+}
+
+message ListCoursesResponse {
+  repeated Course courses = 1;
+}
+
+message WatchCourseEventsRequest {
+  int32 limit = 1;
+}
+
+message Course {
+  // Field numbers являются частью wire-контракта. Их нельзя переиспользовать
+  // для другого смысла после публикации схемы.
+  string id = 1;
+  string title = 2;
+  int32 duration_hours = 3;
+  GrpcCourseStatus status = 4;
+}
+
+message CourseEvent {
+  string type = 1;
+  string course_id = 2;
+  string message = 3;
+  int64 created_at_epoch_millis = 4;
+}
+
+enum GrpcCourseStatus {
+  GRPC_COURSE_STATUS_UNSPECIFIED = 0;
+  GRPC_COURSE_STATUS_OPEN = 1;
+  GRPC_COURSE_STATUS_FULL = 2;
+  GRPC_COURSE_STATUS_ARCHIVED = 3;
+}
