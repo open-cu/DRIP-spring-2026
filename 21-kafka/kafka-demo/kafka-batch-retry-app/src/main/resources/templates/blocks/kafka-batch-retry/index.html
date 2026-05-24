@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="ru" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+    <title>Kafka batch retry</title>
+    <style>
+        :root {
+            --bg: #f6f8fb;
+            --panel: #ffffff;
+            --line: #dbe3ee;
+            --text: #1f2937;
+            --muted: #5b6474;
+            --accent: #0b6bcb;
+            --warn: #b45309;
+            --ok: #166534;
+        }
+
+        * { box-sizing: border-box; }
+
+        body {
+            margin: 0;
+            font-family: "Segoe UI", Tahoma, sans-serif;
+            color: var(--text);
+            background: var(--bg);
+        }
+
+        .page {
+            max-width: 1120px;
+            margin: 0 auto;
+            padding: 1.5rem;
+        }
+
+        .intro, .tool, .metric, .table-wrap {
+            background: var(--panel);
+            border: 1px solid var(--line);
+            border-radius: 8px;
+            padding: 1rem;
+        }
+
+        h1, h2 { margin: 0 0 0.45rem; }
+        h1 { font-size: 1.35rem; }
+        h2 { font-size: 1.05rem; }
+
+        p {
+            margin: 0.2rem 0;
+            color: var(--muted);
+            line-height: 1.4;
+        }
+
+        .actions {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0.9rem;
+            margin-top: 1rem;
+        }
+
+        .inline {
+            display: grid;
+            grid-template-columns: 1fr auto;
+            gap: 0.65rem;
+            align-items: end;
+        }
+
+        .metrics {
+            display: grid;
+            grid-template-columns: repeat(5, minmax(0, 1fr));
+            gap: 0.7rem;
+            margin-top: 1rem;
+        }
+
+        label {
+            display: block;
+            color: var(--muted);
+            font-size: 0.86rem;
+            margin-bottom: 0.25rem;
+        }
+
+        input, button {
+            width: 100%;
+            border-radius: 8px;
+            border: 1px solid #cfd7e3;
+            padding: 0.5rem 0.58rem;
+            font-size: 0.92rem;
+            background: #fff;
+        }
+
+        button {
+            background: var(--accent);
+            border-color: #0a5eb1;
+            color: #fff;
+            font-weight: 600;
+            cursor: pointer;
+            min-width: 160px;
+        }
+
+        button.warn {
+            background: var(--warn);
+            border-color: #9a3412;
+        }
+
+        button.secondary {
+            background: #6b7280;
+            border-color: #4b5563;
+        }
+
+        .metric-title {
+            color: var(--muted);
+            font-size: 0.84rem;
+        }
+
+        .metric-value {
+            font-size: 1.35rem;
+            font-weight: 700;
+            margin-top: 0.15rem;
+        }
+
+        .section { margin-top: 1rem; }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.92rem;
+        }
+
+        th, td {
+            border: 1px solid #e2e8f0;
+            padding: 0.45rem;
+            text-align: left;
+            vertical-align: top;
+        }
+
+        th {
+            background: #f8fafc;
+            color: var(--muted);
+            font-weight: 600;
+        }
+
+        .status {
+            display: inline-block;
+            border-radius: 999px;
+            padding: 0.1rem 0.45rem;
+            border: 1px solid #d4dae3;
+            background: #f8fafc;
+            font-weight: 600;
+        }
+
+        .processed { color: var(--ok); }
+        .failed { color: #9a3412; }
+
+        .flash {
+            margin-top: 0.8rem;
+            color: #114a8a;
+            font-weight: 600;
+        }
+
+        .note-list {
+            margin: 0.55rem 0 0;
+            padding-left: 1.15rem;
+            color: var(--muted);
+            line-height: 1.45;
+        }
+
+        .note-list li + li {
+            margin-top: 0.25rem;
+        }
+
+        @media (max-width: 920px) {
+            .actions, .metrics, .inline { grid-template-columns: 1fr; }
+            button { width: 100%; }
+        }
+    </style>
+    <script>
+        (() => {
+            let formDirty = false;
+
+            window.addEventListener("DOMContentLoaded", () => {
+                document.querySelectorAll("input, select, textarea").forEach((control) => {
+                    control.addEventListener("input", () => formDirty = true);
+                    control.addEventListener("change", () => formDirty = true);
+                });
+                document.querySelectorAll("form").forEach((form) => {
+                    form.addEventListener("submit", () => formDirty = false);
+                });
+            });
+
+            function userIsEditing() {
+                const active = document.activeElement;
+                return formDirty || active && ["INPUT", "SELECT", "TEXTAREA", "BUTTON"].includes(active.tagName);
+            }
+
+            setInterval(() => {
+                if (!userIsEditing()) {
+                    window.location.reload();
+                }
+            }, 2000);
+        })();
+    </script>
+</head>
+<body>
+<div class="page">
+    <section class="intro">
+        <h1>Блок kafka-batch-retry: читаем пачкой</h1>
+        <p>Учебный сценарий: listener получает список событий. Это снижает накладные расходы, но ошибка внутри списка становится дороже.</p>
+        <p>В учебной версии ошибочное событие явно уходит в DLT, чтобы цена batch-подхода была видна на экране.</p>
+        <div class="flash" th:if="${message}" th:text="${message}"></div>
+    </section>
+
+    <section class="section table-wrap">
+        <h2>Сценарий</h2>
+        <p>Producer (отправитель) публикует несколько заказов подряд. Batch listener (читатель пачки) получает не одно
+            событие, а список событий и обрабатывает их за один проход.</p>
+        <p>Обычная пачка показывает выигрыш: меньше накладных расходов на чтение. Пачка с ошибкой показывает цену:
+            одно проблемное событие заставляет отдельно решать, что повторять и что отправлять в DLT.</p>
+        <ul class="note-list">
+            <li>Batch уместен, когда события похожи и обработчик умеет жить с пачкой.</li>
+            <li>Главный вопрос batch-подхода: partial failure (частичный сбой) внутри списка.</li>
+            <li>Если каждое событие требует отдельной транзакции, обычный listener часто проще объяснить и поддерживать.</li>
+        </ul>
+    </section>
+
+    <section class="actions">
+        <form class="tool" th:action="@{/blocks/kafka-batch-retry/publish-batch}" method="post">
+            <h2>Обычная пачка</h2>
+            <div class="inline">
+                <div>
+                    <label for="count">Количество событий</label>
+                    <input id="count" name="count" type="number" min="1" max="20" value="5"/>
+                </div>
+                <button type="submit">Отправить пачку</button>
+            </div>
+        </form>
+
+        <form class="tool" th:action="@{/blocks/kafka-batch-retry/publish-failure}" method="post">
+            <h2>Пачка с ошибкой</h2>
+            <p>Одно событие помечено как проблемное и показывает partial failure.</p>
+            <button class="warn" type="submit">Отправить ошибочную пачку</button>
+        </form>
+    </section>
+
+    <section class="metrics">
+        <div class="metric">
+            <div class="metric-title">Опубликовано</div>
+            <div class="metric-value" th:text="${data.published()}"></div>
+        </div>
+        <div class="metric">
+            <div class="metric-title">Обработано</div>
+            <div class="metric-value processed" th:text="${data.processed()}"></div>
+        </div>
+        <div class="metric">
+            <div class="metric-title">Ошибки</div>
+            <div class="metric-value failed" th:text="${data.failed()}"></div>
+        </div>
+        <div class="metric">
+            <div class="metric-title">DLT</div>
+            <div class="metric-value failed" th:text="${data.sentToDlt()}"></div>
+        </div>
+        <div class="metric">
+            <div class="metric-title">Размер последней пачки</div>
+            <div class="metric-value" th:text="${data.lastBatchSize()}"></div>
+        </div>
+    </section>
+
+    <section class="section table-wrap">
+        <h2>Реестр событий batch-сценария</h2>
+        <table>
+            <thead>
+            <tr>
+                <th>ID</th>
+                <th>Описание</th>
+                <th>Статус</th>
+                <th>Проблемное</th>
+                <th>Комментарий</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="order : ${data.orders()}">
+                <td th:text="${order.id()}"></td>
+                <td th:text="${order.description()}"></td>
+                <td><span class="status" th:text="${order.status()}"></span></td>
+                <td th:text="${order.failForDemo()} ? 'да' : 'нет'"></td>
+                <td th:text="${order.note()} ?: 'ждет listener'"></td>
+            </tr>
+            <tr th:if="${#lists.isEmpty(data.orders())}">
+                <td colspan="5">Пока нет событий.</td>
+            </tr>
+            </tbody>
+        </table>
+    </section>
+
+    <form class="section" th:action="@{/blocks/kafka-batch-retry/reset}" method="post">
+        <button class="secondary" type="submit">Сброс</button>
+    </form>
+</div>
+</body>
+</html>

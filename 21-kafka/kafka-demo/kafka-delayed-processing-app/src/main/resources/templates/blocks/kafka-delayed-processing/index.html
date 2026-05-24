@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="ru" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+    <title>Kafka delayed processing</title>
+    <style>
+        :root {
+            --bg: #f6f8fb;
+            --panel: #ffffff;
+            --line: #dbe3ee;
+            --text: #1f2937;
+            --muted: #5b6474;
+            --accent: #0f766e;
+            --ok: #166534;
+            --ok-bg: #eefbf1;
+        }
+
+        * { box-sizing: border-box; }
+
+        body {
+            margin: 0;
+            font-family: "Segoe UI", Tahoma, sans-serif;
+            color: var(--text);
+            background: var(--bg);
+        }
+
+        .page {
+            max-width: 1120px;
+            margin: 0 auto;
+            padding: 1.5rem;
+        }
+
+        .intro, .tool, .table-wrap {
+            background: var(--panel);
+            border: 1px solid var(--line);
+            border-radius: 8px;
+            padding: 1rem;
+        }
+
+        h1, h2 { margin: 0 0 0.45rem; }
+        h1 { font-size: 1.35rem; }
+        h2 { font-size: 1.05rem; }
+
+        p {
+            margin: 0.2rem 0;
+            color: var(--muted);
+            line-height: 1.4;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: 1fr 180px auto;
+            gap: 0.7rem;
+            align-items: end;
+            margin-top: 1rem;
+        }
+
+        label {
+            display: block;
+            color: var(--muted);
+            font-size: 0.86rem;
+            margin-bottom: 0.25rem;
+        }
+
+        input, select, button {
+            width: 100%;
+            border-radius: 8px;
+            border: 1px solid #cfd7e3;
+            padding: 0.5rem 0.58rem;
+            font-size: 0.92rem;
+            background: #fff;
+        }
+
+        button {
+            background: var(--accent);
+            border-color: #115e59;
+            color: #fff;
+            font-weight: 600;
+            cursor: pointer;
+            min-width: 170px;
+        }
+
+        button.secondary {
+            background: #6b7280;
+            border-color: #4b5563;
+        }
+
+        .section { margin-top: 1rem; }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.92rem;
+        }
+
+        th, td {
+            border: 1px solid #e2e8f0;
+            padding: 0.45rem;
+            text-align: left;
+            vertical-align: top;
+        }
+
+        th {
+            background: #f8fafc;
+            color: var(--muted);
+            font-weight: 600;
+        }
+
+        .status {
+            display: inline-block;
+            border-radius: 999px;
+            padding: 0.1rem 0.45rem;
+            border: 1px solid #d4dae3;
+            background: #f8fafc;
+            font-weight: 600;
+        }
+
+        .done {
+            border-color: #9bd5ad;
+            background: var(--ok-bg);
+            color: var(--ok);
+        }
+
+        .bar {
+            height: 10px;
+            border: 1px solid #d5deea;
+            border-radius: 999px;
+            background: #e8edf5;
+            overflow: hidden;
+            min-width: 140px;
+        }
+
+        .fill {
+            height: 100%;
+            background: var(--accent);
+        }
+
+        .flash {
+            margin-top: 0.8rem;
+            color: #115e59;
+            font-weight: 600;
+        }
+
+        .note-list {
+            margin: 0.55rem 0 0;
+            padding-left: 1.15rem;
+            color: var(--muted);
+            line-height: 1.45;
+        }
+
+        .note-list li + li {
+            margin-top: 0.25rem;
+        }
+
+        @media (max-width: 860px) {
+            .grid { grid-template-columns: 1fr; }
+            button { width: 100%; }
+        }
+    </style>
+    <script>
+        (() => {
+            let formDirty = false;
+
+            window.addEventListener("DOMContentLoaded", () => {
+                document.querySelectorAll("input, select, textarea").forEach((control) => {
+                    control.addEventListener("input", () => formDirty = true);
+                    control.addEventListener("change", () => formDirty = true);
+                });
+                document.querySelectorAll("form").forEach((form) => {
+                    form.addEventListener("submit", () => formDirty = false);
+                });
+            });
+
+            function userIsEditing() {
+                const active = document.activeElement;
+                return formDirty || active && ["INPUT", "SELECT", "TEXTAREA", "BUTTON"].includes(active.tagName);
+            }
+
+            setInterval(() => {
+                if (!userIsEditing()) {
+                    window.location.reload();
+                }
+            }, 2000);
+        })();
+    </script>
+</head>
+<body>
+<div class="page">
+    <section class="intro">
+        <h1>Блок kafka-delayed-processing: отложенный заказ</h1>
+        <p>Учебный сценарий: заказ сначала получает статус ОЖИДАЕТ, событие попадает в delay topic, а обработка запускается после времени processAt.</p>
+        <p>Consumer не делает sleep: если время еще не пришло, Spring Kafka ставит partition на паузу и читает сообщение снова позже.</p>
+        <p>Если обработка после задержки падает, Spring Kafka проводит событие через retry topic и только потом отправляет его в DLT.</p>
+        <div class="flash" th:if="${message}" th:text="${message}"></div>
+    </section>
+
+    <section class="section table-wrap">
+        <h2>Сценарий</h2>
+        <p>Пользователь создает отложенный заказ и выбирает задержку: 5, 30 или 300 секунд. Заказ сразу получает статус
+            ОЖИДАЕТ, а событие сначала попадает в request topic (канал запроса на задержку) с заголовком processAt.</p>
+        <p>Если consumer читает событие раньше срока, он не коммитит offset и вызывает backoff manager.
+            Spring Kafka временно ставит partition на паузу, затем снова отдает это же сообщение, consumer отправляет событие в process topic, и второй
+            listener переводит заказ в статус ОБРАБОТАН.</p>
+        <ul class="note-list">
+            <li>Компромисс 1: listener временно не читает следующие сообщения, поэтому возможна очередь за первым отложенным событием.</li>
+            <li>Компромисс 2: нужен ручной commit. Нельзя фиксировать offset, пока событие еще только ждет своего времени.</li>
+            <li>Компромисс 3: delay живет в consumer-логике, потому что Kafka broker не дает отдельной кнопки delayed delivery.</li>
+            <li>TaskScheduler здесь инфраструктурный: он нужен Spring Kafka, чтобы снять partition с паузы, а не чтобы запускать бизнес-обработку.</li>
+            <li>Технический retry начинается только после process topic: это не бизнес-задержка, а повтор при ошибке обработки.</li>
+            <li>RetryTopicConfiguration отправляет событие в retry topic, ждет интервал и возвращает его в обработку.</li>
+            <li>DLT (topic для проблемных сообщений) нужен, когда событие нельзя обработать после всех попыток.</li>
+        </ul>
+    </section>
+
+    <form class="tool section" th:action="@{/blocks/kafka-delayed-processing/orders}" method="post">
+        <h2>Действие для демонстрации</h2>
+        <div class="grid">
+            <div>
+                <label for="description">Описание заказа</label>
+                <input id="description" name="description" value="отложенный заказ"/>
+                <small>Для демонстрации retry и DLT введите описание со словом fail.</small>
+            </div>
+            <div>
+                <label for="delaySeconds">Задержка</label>
+                <select id="delaySeconds" name="delaySeconds">
+                    <option th:each="delay : ${data.delays()}" th:value="${delay}" th:text="${delay + ' секунд'}"></option>
+                </select>
+            </div>
+            <button type="submit">Создать заказ</button>
+        </div>
+    </form>
+
+    <section class="section table-wrap">
+        <h2>Реестр отложенных заказов</h2>
+        <table>
+            <thead>
+            <tr>
+                <th>ID</th>
+                <th>Описание</th>
+                <th>Статус</th>
+                <th>Задержка</th>
+                <th>Прогресс</th>
+                <th>Комментарий</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="order : ${data.orders()}">
+                <td th:text="${order.id()}"></td>
+                <td th:text="${order.description()}"></td>
+                <td>
+                    <span class="status" th:classappend="${order.status() == 'ОБРАБОТАН'} ? ' done'" th:text="${order.status()}"></span>
+                </td>
+                <td th:text="${order.delaySeconds() + ' секунд'}"></td>
+                <td>
+                    <div class="bar"><div class="fill" th:style="'width:' + ${order.progressPercent()} + '%'"></div></div>
+                </td>
+                <td th:text="${order.note()}"></td>
+            </tr>
+            <tr th:if="${#lists.isEmpty(data.orders())}">
+                <td colspan="6">Пока нет заказов.</td>
+            </tr>
+            </tbody>
+        </table>
+    </section>
+
+    <form class="section" th:action="@{/blocks/kafka-delayed-processing/reset}" method="post">
+        <button class="secondary" type="submit">Сброс</button>
+    </form>
+</div>
+</body>
+</html>

@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="ru" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+    <title>Kafka distribution model</title>
+    <style>
+        :root {
+            --bg: #f6f8fb;
+            --panel: #ffffff;
+            --line: #dbe3ee;
+            --text: #1f2937;
+            --muted: #5b6474;
+            --accent: #0f766e;
+        }
+
+        * { box-sizing: border-box; }
+
+        body {
+            margin: 0;
+            font-family: "Segoe UI", Tahoma, sans-serif;
+            color: var(--text);
+            background: var(--bg);
+        }
+
+        .page {
+            max-width: 1120px;
+            margin: 0 auto;
+            padding: 1.5rem;
+        }
+
+        .intro, .tool, .table-wrap {
+            background: var(--panel);
+            border: 1px solid var(--line);
+            border-radius: 8px;
+            padding: 1rem;
+        }
+
+        h1, h2 { margin: 0 0 0.45rem; }
+        h1 { font-size: 1.35rem; }
+        h2 { font-size: 1.05rem; }
+
+        p {
+            margin: 0.2rem 0;
+            color: var(--muted);
+            line-height: 1.4;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr auto;
+            gap: 0.7rem;
+            align-items: end;
+            margin-top: 1rem;
+        }
+
+        label {
+            display: block;
+            color: var(--muted);
+            font-size: 0.86rem;
+            margin-bottom: 0.25rem;
+        }
+
+        input, button {
+            width: 100%;
+            border-radius: 8px;
+            border: 1px solid #cfd7e3;
+            padding: 0.5rem 0.58rem;
+            font-size: 0.92rem;
+        }
+
+        button {
+            background: var(--accent);
+            border-color: #115e59;
+            color: #fff;
+            font-weight: 600;
+            cursor: pointer;
+            min-width: 160px;
+        }
+
+        button.secondary {
+            background: #6b7280;
+            border-color: #4b5563;
+        }
+
+        .section { margin-top: 1rem; }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.92rem;
+        }
+
+        th, td {
+            border: 1px solid #e2e8f0;
+            padding: 0.45rem;
+            text-align: left;
+            vertical-align: top;
+        }
+
+        th {
+            background: #f8fafc;
+            color: var(--muted);
+            font-weight: 600;
+        }
+
+        code {
+            background: #f1f5f9;
+            border: 1px solid #e2e8f0;
+            border-radius: 6px;
+            padding: 0.06rem 0.3rem;
+        }
+
+        .flash {
+            margin-top: 0.8rem;
+            color: #115e59;
+            font-weight: 600;
+        }
+
+        .note-list {
+            margin: 0.55rem 0 0;
+            padding-left: 1.15rem;
+            color: var(--muted);
+            line-height: 1.45;
+        }
+
+        .note-list li + li {
+            margin-top: 0.25rem;
+        }
+
+        @media (max-width: 860px) {
+            .grid { grid-template-columns: 1fr; }
+            button { width: 100%; }
+        }
+    </style>
+    <script>
+        (() => {
+            let formDirty = false;
+
+            window.addEventListener("DOMContentLoaded", () => {
+                document.querySelectorAll("input, select, textarea").forEach((control) => {
+                    control.addEventListener("input", () => formDirty = true);
+                    control.addEventListener("change", () => formDirty = true);
+                });
+                document.querySelectorAll("form").forEach((form) => {
+                    form.addEventListener("submit", () => formDirty = false);
+                });
+            });
+
+            function userIsEditing() {
+                const active = document.activeElement;
+                return formDirty || active && ["INPUT", "SELECT", "TEXTAREA", "BUTTON"].includes(active.tagName);
+            }
+
+            setInterval(() => {
+                if (!userIsEditing()) {
+                    window.location.reload();
+                }
+            }, 2000);
+        })();
+    </script>
+</head>
+<body>
+<div class="page">
+    <section class="intro">
+        <h1>Блок kafka-distribution-model: key, partition, consumer group</h1>
+        <p>Учебный сценарий: отправляем события в topic <code th:text="${data.topic()}"></code> и смотрим, какую partition выбрала Kafka.</p>
+        <p>Одинаковый key помогает сохранить порядок событий одного заказа внутри одной partition.</p>
+        <div class="flash" th:if="${message}" th:text="${message}"></div>
+    </section>
+
+    <section class="section table-wrap">
+        <h2>Сценарий</h2>
+        <p>Отправьте несколько событий с одним и тем же key (ключ события), например <code>order-42</code>. Kafka выберет
+            для них одну partition (дорожку потока), и таблица покажет partition, offset (номер сообщения) и consumer
+            (получатель), который прочитал событие.</p>
+        <p>Так видно, почему порядок событий одного заказа обычно привязывают к key, а параллельность чтения упирается
+            в число partition.</p>
+        <ul class="note-list">
+            <li>Порядок Kafka держит внутри одной partition, а не во всем topic сразу.</li>
+            <li>Если partition три, четвертый consumer в той же group (группе читателей) не ускорит чтение.</li>
+            <li>При rebalance (перераспределении partition) обработчик должен спокойно переживать повторы.</li>
+        </ul>
+    </section>
+
+    <form class="tool section" th:action="@{/blocks/kafka-distribution-model/events}" method="post">
+        <h2>Действие для демонстрации</h2>
+        <div class="grid">
+            <div>
+                <label for="eventKey">Key события</label>
+                <input id="eventKey" name="eventKey" value="order-42"/>
+            </div>
+            <div>
+                <label for="payload">Payload</label>
+                <input id="payload" name="payload" value="order status changed"/>
+            </div>
+            <button type="submit">Отправить событие</button>
+        </div>
+    </form>
+
+    <section class="section table-wrap">
+        <h2>Реестр полученных событий</h2>
+        <table>
+            <thead>
+            <tr>
+                <th>ID</th>
+                <th>Key</th>
+                <th>Payload</th>
+                <th>Partition</th>
+                <th>Offset</th>
+                <th>Consumer</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="event : ${data.events()}">
+                <td th:text="${event.id()}"></td>
+                <td><code th:text="${event.eventKey()}"></code></td>
+                <td th:text="${event.payload()}"></td>
+                <td th:text="${event.partition()}"></td>
+                <td th:text="${event.offset()}"></td>
+                <td th:text="${event.consumerName()}"></td>
+            </tr>
+            <tr th:if="${#lists.isEmpty(data.events())}">
+                <td colspan="6">Пока нет событий.</td>
+            </tr>
+            </tbody>
+        </table>
+    </section>
+
+    <form class="section" th:action="@{/blocks/kafka-distribution-model/reset}" method="post">
+        <button class="secondary" type="submit">Сброс</button>
+    </form>
+</div>
+</body>
+</html>
