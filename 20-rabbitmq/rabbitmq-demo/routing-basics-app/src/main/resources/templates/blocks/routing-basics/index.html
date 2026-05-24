@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="ru" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+    <title>Блок routing-basics</title>
+    <style>
+        :root {
+            --bg: #f7f8fb;
+            --card: #ffffff;
+            --line: #e2e5eb;
+            --text: #1f2937;
+            --muted: #5b6474;
+            --accent: #0f766e;
+            --accent-soft: #e6fffb;
+            --warn-soft: #fff7ed;
+        }
+
+        * { box-sizing: border-box; }
+
+        body {
+            margin: 0;
+            font-family: "Segoe UI", Tahoma, sans-serif;
+            background: radial-gradient(circle at top right, #eef2ff 0%, var(--bg) 45%);
+            color: var(--text);
+        }
+
+        .page {
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 1.5rem;
+        }
+
+        .hero {
+            background: var(--card);
+            border: 1px solid var(--line);
+            border-radius: 14px;
+            padding: 1rem 1.2rem;
+            box-shadow: 0 8px 24px rgba(15, 23, 42, 0.04);
+        }
+
+        .hero h1 {
+            margin: 0 0 0.45rem;
+            font-size: 1.35rem;
+        }
+
+        .hero p {
+            margin: 0;
+            color: var(--muted);
+            line-height: 1.4;
+        }
+
+        .grid {
+            margin-top: 1rem;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+        }
+
+        .card {
+            background: var(--card);
+            border: 1px solid var(--line);
+            border-radius: 14px;
+            padding: 1rem;
+            box-shadow: 0 6px 20px rgba(15, 23, 42, 0.03);
+        }
+
+        h2 {
+            margin: 0 0 0.8rem;
+            font-size: 1.05rem;
+        }
+
+        .legend {
+            list-style: none;
+            margin: 0;
+            padding: 0;
+            display: grid;
+            gap: 0.45rem;
+        }
+
+        .legend li {
+            border: 1px dashed var(--line);
+            border-radius: 10px;
+            padding: 0.45rem 0.6rem;
+            color: var(--muted);
+            font-size: 0.92rem;
+            background: #fcfcfd;
+        }
+
+        .legend strong {
+            color: var(--text);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.93rem;
+        }
+
+        th, td {
+            border-bottom: 1px solid var(--line);
+            padding: 0.45rem;
+            text-align: left;
+        }
+
+        th {
+            color: var(--muted);
+            font-weight: 600;
+            background: #fafbff;
+        }
+
+        .count-badge {
+            display: inline-block;
+            min-width: 2rem;
+            text-align: center;
+            padding: 0.12rem 0.4rem;
+            border-radius: 999px;
+            border: 1px solid var(--line);
+            background: #ffffff;
+        }
+
+        .count-badge.nonzero {
+            border-color: #22c55e33;
+            background: #f0fdf4;
+            color: #166534;
+            font-weight: 600;
+        }
+
+        .forms {
+            margin-top: 1rem;
+            display: grid;
+            grid-template-columns: repeat(2, minmax(260px, 1fr));
+            gap: 0.9rem;
+        }
+
+        .form-card {
+            border: 1px solid var(--line);
+            border-radius: 12px;
+            padding: 0.75rem;
+            background: #ffffff;
+        }
+
+        .form-card h3 {
+            margin: 0 0 0.3rem;
+            font-size: 0.98rem;
+        }
+
+        .hint {
+            margin: 0 0 0.6rem;
+            color: var(--muted);
+            font-size: 0.88rem;
+        }
+
+        .row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0.45rem;
+        }
+
+        input, select, button {
+            width: 100%;
+            border-radius: 8px;
+            border: 1px solid #cfd5df;
+            padding: 0.48rem 0.56rem;
+            font-size: 0.92rem;
+            background: #fff;
+        }
+
+        button {
+            margin-top: 0.45rem;
+            border: 1px solid #115e59;
+            background: var(--accent);
+            color: #fff;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        button:hover { filter: brightness(0.95); }
+
+        .reset-card {
+            margin-top: 0.9rem;
+            border: 1px solid #fdba7433;
+            background: var(--warn-soft);
+        }
+
+        .reset-card button {
+            border-color: #9a3412;
+            background: #b45309;
+        }
+
+        @media (max-width: 900px) {
+            .grid { grid-template-columns: 1fr; }
+            .forms { grid-template-columns: 1fr; }
+            .row { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+<div class="page">
+    <section class="hero">
+        <h1>Блок routing-basics</h1>
+        <p>Тренируем 4 типа маршрутизации в RabbitMQ: <strong>direct</strong>, <strong>topic</strong>,
+            <strong>fanout</strong>, <strong>headers</strong>.
+            Отправляем сообщение и сразу смотрим изменение статистики очередей.</p>
+    </section>
+
+    <section class="grid">
+        <div class="card">
+            <h2>Шпаргалка по маршрутизации</h2>
+            <ul class="legend">
+                <li><strong>Direct:</strong> точное совпадение <code>routing key</code> и <code>binding key</code>.</li>
+                <li><strong>Topic:</strong> шаблон ключа: <code>*</code> — одно слово, <code>#</code> — много слов.</li>
+                <li><strong>Fanout:</strong> broadcast во все связанные очереди, ключ игнорируется.</li>
+                <li><strong>Headers:</strong> маршрутизация по заголовкам, в примере — <code>X-Priority</code>.</li>
+            </ul>
+        </div>
+
+        <div class="card">
+            <h2>Статистика очередей</h2>
+            <table>
+                <thead>
+                <tr>
+                    <th>Очередь</th>
+                    <th>Сообщений</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="entry : ${queueStats}">
+                    <td th:text="${entry.key}">queue</td>
+                    <td>
+                        <span class="count-badge"
+                              th:text="${entry.value}"
+                              th:classappend="${entry.value > 0} ? ' nonzero' : ''">0</span>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </section>
+
+    <section class="forms">
+        <form class="form-card" th:action="@{/blocks/routing-basics/send/direct}" method="post">
+            <h3>Direct</h3>
+            <p class="hint">Точное совпадение ключа. Выбери вариант и смотри, в какую очередь уйдёт сообщение.</p>
+            <div class="row">
+                <select name="routingKey">
+                    <option value="order.created"
+                            th:selected="${directRoutingKey == 'order.created'}">order.created -> orders.queue</option>
+                    <option value="order.paid"
+                            th:selected="${directRoutingKey == 'order.paid'}">order.paid -> billing.queue</option>
+                </select>
+                <input name="description" th:value="${directDescription}" value="сообщение direct"/>
+            </div>
+            <button type="submit">Отправить direct</button>
+        </form>
+
+        <form class="form-card" th:action="@{/blocks/routing-basics/send/topic}" method="post">
+            <h3>Topic</h3>
+            <p class="hint">Шаблон ключа: пример <code>order.created</code> / <code>notifications.mail.sent</code>.</p>
+            <div class="row">
+                <input name="routingKey" th:value="${topicRoutingKey}" value="order.created"/>
+                <input name="description" th:value="${topicDescription}" value="сообщение topic"/>
+            </div>
+            <button type="submit">Отправить topic</button>
+        </form>
+
+        <form class="form-card" th:action="@{/blocks/routing-basics/send/fanout}" method="post">
+            <h3>Fanout</h3>
+            <p class="hint">Сообщение уйдёт во все связанные очереди.</p>
+            <input name="description" th:value="${fanoutDescription}" value="сообщение fanout"/>
+            <button type="submit">Отправить fanout</button>
+        </form>
+
+        <form class="form-card" th:action="@{/blocks/routing-basics/send/headers}" method="post">
+            <h3>Headers</h3>
+            <p class="hint">Фильтр по заголовку <code>X-Priority</code>.</p>
+            <div class="row">
+                <select name="priority">
+                    <option value="HIGH" th:selected="${headersPriority == 'HIGH'}">HIGH</option>
+                    <option value="LOW" th:selected="${headersPriority == 'LOW'}">LOW</option>
+                </select>
+                <input name="description" th:value="${headersDescription}" value="сообщение headers"/>
+            </div>
+            <button type="submit">Отправить headers</button>
+        </form>
+    </section>
+
+    <form class="form-card reset-card" th:action="@{/blocks/routing-basics/reset}" method="post">
+        <h3>Сброс</h3>
+        <p class="hint">Очищает все очереди блока routing-basics.</p>
+        <button type="submit">Сбросить очереди</button>
+    </form>
+</div>
+
+</body>
+</html>

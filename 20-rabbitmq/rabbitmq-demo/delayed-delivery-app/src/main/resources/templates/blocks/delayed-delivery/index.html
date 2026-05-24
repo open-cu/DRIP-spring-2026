@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="ru" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+    <title>Блок delayed-delivery</title>
+    <style>
+        :root {
+            --bg: #f5f7fb;
+            --card: #ffffff;
+            --line: #dbe3ee;
+            --text: #1f2937;
+            --muted: #5b6474;
+            --accent: #0f766e;
+            --accent-soft: #e6fffb;
+            --bar-bg: #e8edf5;
+            --bar-fill: #0f766e;
+            --done-fill: #16a34a;
+        }
+
+        * { box-sizing: border-box; }
+
+        body {
+            font-family: "Segoe UI", Tahoma, sans-serif;
+            margin: 0;
+            color: var(--text);
+            background: radial-gradient(circle at top right, #edf5ff 0%, var(--bg) 45%);
+        }
+
+        .page {
+            max-width: 1150px;
+            margin: 0 auto;
+            padding: 1.5rem;
+        }
+
+        .hero {
+            background: var(--card);
+            border: 1px solid var(--line);
+            border-radius: 14px;
+            padding: 1rem 1.2rem;
+            box-shadow: 0 8px 24px rgba(15, 23, 42, 0.04);
+        }
+
+        .hero h1 {
+            margin: 0 0 0.35rem;
+            font-size: 1.35rem;
+        }
+
+        .hero p {
+            margin: 0;
+            color: var(--muted);
+        }
+
+        .section { margin-top: 1rem; }
+
+        .actions {
+            display: grid;
+            grid-template-columns: 1fr auto;
+            gap: 0.8rem;
+            align-items: end;
+            background: var(--card);
+            border: 1px solid var(--line);
+            border-radius: 14px;
+            padding: 0.9rem;
+        }
+
+        .compose {
+            display: grid;
+            grid-template-columns: 2fr 1fr auto;
+            gap: 0.65rem;
+            align-items: end;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 0.25rem;
+            color: var(--muted);
+            font-size: 0.85rem;
+        }
+
+        input, select, button {
+            width: 100%;
+            border-radius: 8px;
+            border: 1px solid #ccd6e4;
+            padding: 0.46rem 0.56rem;
+            font-size: 0.92rem;
+            background: #fff;
+        }
+
+        button {
+            border-color: #115e59;
+            background: var(--accent);
+            color: #fff;
+            font-weight: 600;
+            cursor: pointer;
+            width: auto;
+            min-width: 170px;
+        }
+
+        .secondary {
+            border-color: #92400e;
+            background: #b45309;
+            min-width: 110px;
+        }
+
+        .table-wrap {
+            background: var(--card);
+            border: 1px solid var(--line);
+            border-radius: 14px;
+            padding: 0.9rem;
+            box-shadow: 0 6px 20px rgba(15, 23, 42, 0.03);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.92rem;
+        }
+
+        th, td {
+            border: 1px solid #e2e8f0;
+            padding: 0.42rem;
+            text-align: left;
+            vertical-align: middle;
+        }
+
+        th {
+            background: #f8fafc;
+            color: var(--muted);
+            font-weight: 600;
+        }
+
+        .status {
+            display: inline-block;
+            border-radius: 999px;
+            padding: 0.08rem 0.44rem;
+            font-size: 0.8rem;
+            border: 1px solid #d4dae3;
+            background: #f8fafc;
+        }
+
+        .status.done {
+            border-color: #9bd5ad;
+            background: #eefbf1;
+            color: #166534;
+            font-weight: 600;
+        }
+
+        .progress-track {
+            height: 10px;
+            width: 180px;
+            max-width: 100%;
+            border-radius: 999px;
+            background: var(--bar-bg);
+            overflow: hidden;
+            border: 1px solid #d5deea;
+        }
+
+        .progress-fill {
+            height: 100%;
+            width: 0;
+            background: var(--bar-fill);
+            transition: width 350ms ease;
+        }
+
+        .progress-fill.done {
+            background: var(--done-fill);
+        }
+
+        .progress-text {
+            margin-top: 0.2rem;
+            color: var(--muted);
+            font-size: 0.8rem;
+        }
+
+        @media (max-width: 980px) {
+            .actions { grid-template-columns: 1fr; }
+            .compose { grid-template-columns: 1fr; }
+            button { width: 100%; }
+            .progress-track { width: 100%; }
+        }
+    </style>
+</head>
+<body>
+<div class="page">
+    <section class="hero">
+        <h1>Блок delayed-delivery: отложенная доставка сообщений</h1>
+        <p>Бизнес-смысл: не все действия нужно выполнять сразу. Отложенная доставка полезна для напоминаний,
+            повторных попыток, “подождать оплату” и других сценариев, где событие должно сработать в будущем.</p>
+        <p>В этом демо мы имитируем поток “создали задачу -> подождали нужный интервал -> обработали”.
+            Статусы обновляются автоматически каждые 2 секунды, а прогресс показывает, сколько осталось до обработки.</p>
+    </section>
+
+    <section class="section actions">
+        <form class="compose" th:action="@{/blocks/delayed-delivery/orders}" method="post">
+            <div>
+                <label>Описание</label>
+                <input name="description" value="отложенный заказ"/>
+            </div>
+            <div>
+                <label>Задержка (сек)</label>
+                <select name="delaySeconds">
+                    <option value="5">5</option>
+                    <option value="30">30</option>
+                    <option value="300">300</option>
+                </select>
+            </div>
+            <button type="submit">Отправить с задержкой</button>
+        </form>
+
+        <form th:action="@{/blocks/delayed-delivery/reset}" method="post">
+            <button class="secondary" type="submit">Сброс</button>
+        </form>
+    </section>
+
+    <section class="section table-wrap">
+<table>
+    <thead>
+    <tr>
+        <th>ID</th>
+        <th>Описание</th>
+        <th>Задержка (сек)</th>
+        <th>Прогресс</th>
+        <th>Статус</th>
+        <th>Создан</th>
+        <th>Обработан</th>
+    </tr>
+    </thead>
+    <tbody id="orders-body">
+    <tr th:if="${#lists.isEmpty(orders)}">
+        <td colspan="7">Отложенных заказов пока нет</td>
+    </tr>
+    <tr th:each="order : ${orders}">
+        <td th:text="${order.id}">1</td>
+        <td th:text="${order.description}">заказ</td>
+        <td th:text="${order.delaySeconds}">5</td>
+        <td>
+            <div class="progress-track"><div class="progress-fill"></div></div>
+            <div class="progress-text">ожидание...</div>
+        </td>
+        <td th:text="${order.status}">ОЖИДАЕТ</td>
+        <td th:text="${order.createdAt}">-</td>
+        <td th:text="${order.processedAt}">-</td>
+    </tr>
+    </tbody>
+</table>
+    </section>
+</div>
+<script>
+    const ordersBody = document.getElementById("orders-body");
+
+    function escapeHtml(value) {
+        return String(value)
+            .replaceAll("&", "&amp;")
+            .replaceAll("<", "&lt;")
+            .replaceAll(">", "&gt;")
+            .replaceAll("\"", "&quot;")
+            .replaceAll("'", "&#39;");
+    }
+
+    function progressInfo(order) {
+        const status = String(order.status || "");
+        const delaySeconds = Number(order.delaySeconds) || 0;
+        if (status === "ОБРАБОТАН") {
+            return { percent: 100, done: true, text: "100% (доставлено)" };
+        }
+        if (delaySeconds <= 0) {
+            return { percent: 0, done: false, text: "Ожидание..." };
+        }
+
+        const createdMs = Date.parse(order.createdAt);
+        if (Number.isNaN(createdMs)) {
+            return { percent: 0, done: false, text: `0% (~${delaySeconds} сек)` };
+        }
+
+        const elapsedSeconds = Math.max(0, (Date.now() - createdMs) / 1000);
+        const rawPercent = (elapsedSeconds / delaySeconds) * 100;
+        const percent = Math.max(0, Math.min(99, Math.floor(rawPercent)));
+        const remaining = Math.max(0, Math.ceil(delaySeconds - elapsedSeconds));
+        return { percent, done: false, text: `${percent}% (~${remaining} сек)` };
+    }
+
+    function renderOrders(orders) {
+        if (!orders || orders.length === 0) {
+            ordersBody.innerHTML = "<tr><td colspan=\"7\">Отложенных заказов пока нет</td></tr>";
+            return;
+        }
+
+        ordersBody.innerHTML = orders.map(order => {
+            const progress = progressInfo(order);
+            const statusClass = String(order.status || "") === "ОБРАБОТАН" ? "status done" : "status";
+            const fillClass = progress.done ? "progress-fill done" : "progress-fill";
+            return `
+                <tr>
+                <td>${escapeHtml(order.id)}</td>
+                <td>${escapeHtml(order.description)}</td>
+                <td>${escapeHtml(order.delaySeconds)}</td>
+                <td>
+                    <div class="progress-track">
+                        <div class="${fillClass}" style="width:${progress.percent}%"></div>
+                    </div>
+                    <div class="progress-text">${escapeHtml(progress.text)}</div>
+                </td>
+                <td><span class="${statusClass}">${escapeHtml(order.status)}</span></td>
+                <td>${escapeHtml(order.createdAt)}</td>
+                <td>${escapeHtml(order.processedAt)}</td>
+            </tr>
+            `;
+        }).join("");
+    }
+
+    async function refreshOrders() {
+        try {
+            const response = await fetch("/blocks/delayed-delivery/orders/state", {cache: "no-store"});
+            if (!response.ok) {
+                return;
+            }
+            const orders = await response.json();
+            renderOrders(orders);
+        } catch (error) {
+            console.debug("polling failed", error);
+        }
+    }
+
+    refreshOrders();
+    setInterval(refreshOrders, 2000);
+</script>
+</body>
+</html>

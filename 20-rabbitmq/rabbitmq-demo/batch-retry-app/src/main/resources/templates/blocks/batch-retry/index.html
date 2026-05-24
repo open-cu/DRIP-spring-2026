@@ -1,0 +1,426 @@
+<!DOCTYPE html>
+<html lang="ru" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+    <title>Блок batch-retry</title>
+    <style>
+        :root {
+            --bg: #f6f8fb;
+            --card: #ffffff;
+            --line: #dbe3ee;
+            --text: #1f2937;
+            --muted: #5b6474;
+            --accent: #0b6bcb;
+            --warn: #b45309;
+            --ok: #16a34a;
+            --bar-bg: #e8edf5;
+        }
+
+        * { box-sizing: border-box; }
+
+        body {
+            margin: 0;
+            font-family: "Segoe UI", Tahoma, sans-serif;
+            color: var(--text);
+            background: radial-gradient(circle at top right, #edf5ff 0%, var(--bg) 45%);
+        }
+
+        .page {
+            max-width: 1120px;
+            margin: 0 auto;
+            padding: 1.5rem;
+        }
+
+        .hero {
+            background: var(--card);
+            border: 1px solid var(--line);
+            border-radius: 14px;
+            padding: 1rem 1.2rem;
+            box-shadow: 0 8px 24px rgba(15, 23, 42, 0.04);
+        }
+
+        .hero h1 {
+            margin: 0 0 0.35rem;
+            font-size: 1.35rem;
+        }
+
+        .hero p {
+            margin: 0.2rem 0;
+            color: var(--muted);
+            line-height: 1.4;
+        }
+
+        .section {
+            margin-top: 1rem;
+        }
+
+        .kpi-grid {
+            display: grid;
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+            gap: 0.65rem;
+        }
+
+        .kpi-grid.two {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            margin-top: 0.7rem;
+        }
+
+        .kpi {
+            background: var(--card);
+            border: 1px solid var(--line);
+            border-radius: 11px;
+            padding: 0.7rem;
+        }
+
+        .kpi-title {
+            color: var(--muted);
+            font-size: 0.84rem;
+            margin-bottom: 0.2rem;
+        }
+
+        .kpi-value {
+            font-size: 1.28rem;
+            font-weight: 700;
+        }
+
+        .layout {
+            display: grid;
+            grid-template-columns: 1.25fr 1fr;
+            gap: 0.85rem;
+        }
+
+        .card {
+            background: var(--card);
+            border: 1px solid var(--line);
+            border-radius: 14px;
+            padding: 0.9rem;
+            box-shadow: 0 6px 20px rgba(15, 23, 42, 0.03);
+        }
+
+        .card h2 {
+            margin: 0 0 0.55rem;
+            font-size: 1.02rem;
+        }
+
+        .hint {
+            color: var(--muted);
+            font-size: 0.88rem;
+            margin: 0 0 0.65rem;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 0.2rem;
+            color: var(--muted);
+            font-size: 0.84rem;
+        }
+
+        input, select, button {
+            width: 100%;
+            border: 1px solid #cfd7e3;
+            border-radius: 8px;
+            padding: 0.46rem 0.55rem;
+            font-size: 0.92rem;
+            background: #fff;
+        }
+
+        .row {
+            display: grid;
+            grid-template-columns: 1fr 0.7fr;
+            gap: 0.55rem;
+        }
+
+        .row3 {
+            display: grid;
+            grid-template-columns: 0.7fr 1fr auto;
+            gap: 0.55rem;
+            align-items: end;
+        }
+
+        button {
+            background: var(--accent);
+            border-color: #0a5eb1;
+            color: #fff;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        button.secondary {
+            background: var(--warn);
+            border-color: #9a3412;
+        }
+
+        .progress-track {
+            height: 12px;
+            background: var(--bar-bg);
+            border: 1px solid #d5deea;
+            border-radius: 999px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            width: 0;
+            height: 100%;
+            background: #0b6bcb;
+            transition: width 300ms ease;
+        }
+
+        .progress-fill.done {
+            background: var(--ok);
+        }
+
+        .progress-text {
+            margin-top: 0.28rem;
+            color: var(--muted);
+            font-size: 0.84rem;
+        }
+
+        .status-badge {
+            display: inline-block;
+            border-radius: 999px;
+            padding: 0.09rem 0.45rem;
+            border: 1px solid #d4dae3;
+            font-size: 0.82rem;
+            background: #f8fafc;
+        }
+
+        .status-badge.success {
+            border-color: #9bd5ad;
+            background: #eefbf1;
+            color: #166534;
+            font-weight: 600;
+        }
+
+        .status-badge.fail {
+            border-color: #f2c3a8;
+            background: #fff1ea;
+            color: #9a3412;
+            font-weight: 600;
+        }
+
+        .retry-config {
+            margin-top: 0.7rem;
+            border: 1px dashed #cdd8e7;
+            border-radius: 10px;
+            padding: 0.55rem;
+            background: #f8fbff;
+        }
+
+        .retry-config code, .batch-config code {
+            font-size: 0.84rem;
+        }
+
+        .batch-config {
+            margin-top: 0.7rem;
+            border: 1px dashed #cdd8e7;
+            border-radius: 10px;
+            padding: 0.55rem;
+            background: #f8fbff;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.92rem;
+        }
+
+        th, td {
+            border: 1px solid #e2e8f0;
+            padding: 0.42rem;
+            text-align: left;
+        }
+
+        th {
+            background: #f8fafc;
+            color: var(--muted);
+            font-weight: 600;
+        }
+
+        @media (max-width: 960px) {
+            .kpi-grid { grid-template-columns: 1fr 1fr; }
+            .layout { grid-template-columns: 1fr; }
+            .row, .row3 { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+<div class="page">
+    <section class="hero">
+        <h1>Блок batch-retry: пакетная обработка и повторные попытки</h1>
+        <p>Бизнес-смысл: батчи помогают снижать нагрузку на БД при массовых событиях, а retry защищает процесс от временных ошибок интеграций.</p>
+        <p>Страница обновляет метрики автоматически каждые 2 секунды, чтобы наглядно показать динамику без F5.</p>
+    </section>
+
+    <section class="section layout">
+        <div class="card">
+            <h2>Блок 1. Batch Processing</h2>
+            <p class="hint">Сценарий массовой обработки: отправляем пачку сообщений и наблюдаем, как сервис сохраняет их группой.</p>
+            <div class="batch-config">
+                <div><strong>Параметры batching:</strong></div>
+                <div><code>producerSize = <span th:text="${producerBatchSize}">20</span></code> — сколько сообщений копим перед отправкой одним batch.</div>
+                <div><code>producerTimeoutMs = <span th:text="${producerTimeoutMs}">500</span></code> — через сколько ms отправим неполный batch.</div>
+                <div><code>producerBufferLimit = <span th:text="${producerBufferLimit}">1048576</span></code> — лимит буфера batch у producer.</div>
+                <div><code>consumerSize = <span th:text="${consumerBatchSize}">20</span></code> — максимальный размер пачки, которую получает listener.</div>
+                <div><code>consumerReceiveTimeoutMs = <span th:text="${consumerReceiveTimeoutMs}">1000</span></code> — время ожидания добора batch на consumer.</div>
+            </div>
+
+            <div class="kpi-grid two">
+                <div class="kpi">
+                    <div class="kpi-title">Сохранений батча</div>
+                    <div class="kpi-value" id="kpi-batch-save" th:text="${batchSaveCalls}">0</div>
+                </div>
+                <div class="kpi">
+                    <div class="kpi-title">Обработано элементов</div>
+                    <div class="kpi-value" id="kpi-batch-count" th:text="${batchProcessedCount}">0</div>
+                </div>
+            </div>
+
+            <form class="section" th:action="@{/blocks/batch-retry/publish-batch}" method="post">
+                <div class="row">
+                    <div>
+                        <label>Размер батча</label>
+                        <input name="count" type="number" min="1" value="5"/>
+                    </div>
+                    <div>
+                        <label>&nbsp;</label>
+                        <button type="submit">Отправить батч</button>
+                    </div>
+                </div>
+            </form>
+
+            <form class="section" th:action="@{/blocks/batch-retry/reset}" method="post">
+                <button class="secondary" type="submit">Сброс</button>
+            </form>
+        </div>
+
+        <div class="card">
+            <h2>Блок 2. Retry</h2>
+            <p class="hint">Сценарий устойчивости: отправляем заказ и смотрим, как работают повторные попытки при ошибке.</p>
+            <div class="retry-config">
+                <div><strong>Параметры @Retryable:</strong></div>
+                <div><code>maxAttempts = <span th:text="${retryMaxAttempts}">5</span></code></div>
+                <div><code>backoff = @Backoff(delay = <span th:text="${retryBackoffDelayMs}">1000</span>,
+                    multiplier = <span th:text="${retryBackoffMultiplier}">2.0</span>)</code></div>
+                <div class="hint">Паузы растут геометрически: 1s, 2s, 4s, 8s ... до последней попытки.</div>
+            </div>
+
+            <div class="kpi-grid two">
+                <div class="kpi">
+                    <div class="kpi-title">Попыток retry</div>
+                    <div class="kpi-value" id="kpi-retry-attempts" th:text="${retryAttempts}">0</div>
+                </div>
+                <div class="kpi">
+                    <div class="kpi-title">Выбранный заказ</div>
+                    <div class="kpi-value" id="kpi-order-id" th:text="${selectedOrderId == null ? '-' : selectedOrderId}">-</div>
+                </div>
+            </div>
+
+            <form class="section" th:action="@{/blocks/batch-retry/publish-retry}" method="post">
+                <div class="row3">
+                    <div>
+                        <label>ID заказа</label>
+                        <input id="retry-order-id" name="orderId" type="number" value="999"/>
+                    </div>
+                    <div>
+                        <label>Описание</label>
+                        <input name="description" value="пример retry"/>
+                    </div>
+                    <div>
+                        <label>&nbsp;</label>
+                        <button type="submit">Отправить retry-заказ</button>
+                    </div>
+                </div>
+                <label class="section"><input name="failForDemo" type="checkbox" checked/> Форсировать ошибку для демо (показать retry/failed)</label>
+            </form>
+
+            <table>
+                <tr>
+                    <th>Статус retry</th>
+                    <td><span id="retry-status" class="status-badge" th:text="${retryStatus}">НЕ_НАЙДЕН</span></td>
+                </tr>
+                <tr>
+                    <th>Попытки</th>
+                    <td><span id="retry-attempts-line" th:text="${retryAttempts + ' / ' + retryMaxAttempts}">0 / 3</span></td>
+                </tr>
+            </table>
+
+            <div class="section progress-track">
+                <div id="retry-progress-fill" class="progress-fill"></div>
+            </div>
+            <div id="retry-progress-text" class="progress-text">0%</div>
+        </div>
+    </section>
+</div>
+
+<script th:inline="javascript">
+    const maxAttempts = Number([[${retryMaxAttempts}]]) || 5;
+    const backoffDelayMs = Number([[${retryBackoffDelayMs}]]) || 1000;
+    const backoffMultiplier = Number([[${retryBackoffMultiplier}]]) || 2;
+    const selectedOrderFromModel = [[${selectedOrderId}]];
+
+    const kpiBatchSave = document.getElementById("kpi-batch-save");
+    const kpiBatchCount = document.getElementById("kpi-batch-count");
+    const kpiRetryAttempts = document.getElementById("kpi-retry-attempts");
+    const kpiOrderId = document.getElementById("kpi-order-id");
+    const retryStatus = document.getElementById("retry-status");
+    const retryAttemptsLine = document.getElementById("retry-attempts-line");
+    const retryProgressFill = document.getElementById("retry-progress-fill");
+    const retryProgressText = document.getElementById("retry-progress-text");
+
+    function selectedOrderId() {
+        const params = new URLSearchParams(window.location.search);
+        const fromUrl = params.get("orderId");
+        if (fromUrl) {
+            return fromUrl;
+        }
+        return selectedOrderFromModel == null ? null : selectedOrderFromModel;
+    }
+
+    function updateRetryView(status, attempts) {
+        const safeAttempts = Number.isFinite(attempts) ? attempts : 0;
+        const percent = Math.max(0, Math.min(100, Math.round((safeAttempts / maxAttempts) * 100)));
+        retryAttemptsLine.textContent = `${safeAttempts} / ${maxAttempts}`;
+        retryProgressFill.style.width = `${percent}%`;
+        retryProgressFill.classList.toggle("done", status === "УСПЕХ");
+        const stageDelayMs = safeAttempts <= 1
+            ? backoffDelayMs
+            : Math.round(backoffDelayMs * Math.pow(backoffMultiplier, safeAttempts - 1));
+        retryProgressText.textContent = `${percent}% • текущая пауза ~${(stageDelayMs / 1000).toFixed(1)}s`;
+
+        retryStatus.textContent = status || "-";
+        retryStatus.classList.remove("success", "fail");
+        if (status === "УСПЕХ") {
+            retryStatus.classList.add("success");
+        }
+        if (status === "ОШИБКА_ПОСЛЕ_ПОВТОРОВ") {
+            retryStatus.classList.add("fail");
+        }
+    }
+
+    async function refreshState() {
+        try {
+            const currentOrderId = selectedOrderId();
+            const url = currentOrderId
+                ? `/blocks/batch-retry/state?orderId=${encodeURIComponent(currentOrderId)}`
+                : "/blocks/batch-retry/state";
+            const response = await fetch(url, { cache: "no-store" });
+            if (!response.ok) {
+                return;
+            }
+            const state = await response.json();
+
+            kpiBatchSave.textContent = state.batchSaveCalls;
+            kpiBatchCount.textContent = state.batchProcessedCount;
+            kpiRetryAttempts.textContent = state.retryAttempts;
+            kpiOrderId.textContent = state.selectedOrderId == null ? "-" : state.selectedOrderId;
+            updateRetryView(state.retryStatus, state.retryAttempts);
+        } catch (error) {
+            console.debug("batch-retry polling failed", error);
+        }
+    }
+
+    refreshState();
+    setInterval(refreshState, 2000);
+</script>
+</body>
+</html>

@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="ru" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+    <title>Блок spring-core: создание заказа</title>
+    <style>
+        :root {
+            --bg: #f6f8fb;
+            --card: #ffffff;
+            --line: #dbe2ea;
+            --text: #1f2937;
+            --muted: #5b6474;
+            --accent: #0b6bcb;
+            --accent-soft: #eef6ff;
+        }
+
+        * { box-sizing: border-box; }
+
+        body {
+            font-family: "Segoe UI", Tahoma, sans-serif;
+            margin: 0;
+            background: radial-gradient(circle at top right, #eef4ff 0%, var(--bg) 45%);
+            color: var(--text);
+        }
+
+        .page {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 1.5rem;
+        }
+
+        .card {
+            background: var(--card);
+            border: 1px solid var(--line);
+            border-radius: 14px;
+            padding: 1rem 1.1rem;
+            box-shadow: 0 8px 24px rgba(15, 23, 42, 0.04);
+        }
+
+        h1 {
+            margin: 0 0 0.45rem;
+            font-size: 1.3rem;
+        }
+
+        p {
+            margin: 0.2rem 0;
+            color: var(--muted);
+            line-height: 1.4;
+        }
+
+        input {
+            width: 100%;
+            padding: 0.5rem 0.58rem;
+            border: 1px solid #cfd5df;
+            border-radius: 8px;
+            font-size: 0.93rem;
+            margin-top: 0.3rem;
+        }
+
+        button {
+            padding: 0.5rem 0.92rem;
+            border: 1px solid #0a5eb1;
+            border-radius: 8px;
+            background: var(--accent);
+            color: #fff;
+            font-weight: 600;
+            margin-top: 0.7rem;
+            cursor: pointer;
+        }
+
+        .row { margin-top: 0.95rem; }
+
+        .hint {
+            margin-top: 0.7rem;
+            padding: 0.6rem;
+            border: 1px dashed #c9d7ea;
+            border-radius: 10px;
+            background: var(--accent-soft);
+            color: #244b76;
+            font-size: 0.9rem;
+        }
+
+        .back {
+            display: inline-block;
+            margin-top: 1rem;
+            text-decoration: none;
+            border: 1px solid #bfd3eb;
+            background: var(--accent-soft);
+            color: #114a8a;
+            border-radius: 8px;
+            padding: 0.43rem 0.62rem;
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+    </style>
+</head>
+<body>
+<div class="page">
+    <div class="card">
+        <h1>Создание заказа (бизнес-сценарий)</h1>
+        <p>Здесь мы имитируем действие менеджера или клиента: создаём заказ и отправляем его в pipeline обработки.</p>
+        <p>После отправки заказ появится в реестре на главной странице блока, где будет видно прохождение через consumer и RPC.</p>
+
+        <form th:action="@{/blocks/spring-core/orders}" method="post">
+            <div class="row">
+                <label for="description">Описание заказа</label>
+                <input id="description" name="description" type="text" required
+                       placeholder="Например: Заказ #A-104, 3 позиции, доставка завтра"/>
+            </div>
+            <div class="hint">
+                Подсказка: в описании лучше писать “язык бизнеса” (товар, количество, дата), чтобы студентам было проще связать
+                сообщение в очереди с реальным кейсом.
+            </div>
+            <div class="row">
+                <button type="submit">Создать и отправить в RabbitMQ</button>
+            </div>
+        </form>
+
+        <a class="back" th:href="@{/blocks/spring-core}">Вернуться к реестру заказов</a>
+    </div>
+</div>
+</body>
+</html>
