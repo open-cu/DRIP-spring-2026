@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<!--suppress HtmlUnknownAttribute, HtmlRequiredLangAttribute -->
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title th:text="#{all-articles}">Articles</title>
+    <link rel="stylesheet" href="../../static/css/style.css" th:href="@{/css/style.css}" />
+</head>
+<body>
+    <h3 th:text="#{lang-switcher-header}">Select language</h3>
+    <div>
+        <div><a href="#" th:href="@{/(lang=en)}" th:text="#{en-lang-switch-button-caption}">Language - EN</a></div>
+        <div><a href="#" th:href="@{/(lang=ru)}" th:text="#{ru-lang-switch-button-caption}">Language - RU</a></div>
+    </div>
+
+    <h1 th:text="#{all-articles}">All Articles</h1>
+
+    <p><a href="edit.html" th:href="@{/articles/new}" th:text="#{create-new-article}">Create New Article</a></p>
+    <p>
+        <a href="../authors/list.html" th:href="@{/authors}" th:text="#{go-to-authors}">Go to Authors</a>
+        |
+        <a href="../journals/list.html" th:href="@{/journals}" th:text="#{go-to-journals}">Go to Journals</a>
+    </p>
+
+    <table>
+        <thead>
+            <tr>
+                <th th:text="#{id-column}">ID</th>
+                <th th:text="#{title-column}">Title</th>
+                <th th:text="#{authors-column}">Author(s)</th>
+                <th th:text="#{journal-column}">Journal</th>
+                <th th:text="#{actions-column}">Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr th:each="article : ${articles}" th:object="${article}">
+                <td th:text="*{id}">1</td>
+                <td><a th:href="@{/articles/{id}(id=*{id})}" th:text="*{title}">Шаблонная статья</a></td>
+                <td>
+                    <span th:each="author, stat : *{authors}">
+                        <span th:text="${author.name}">Шаблонный автор</span><span th:if="${!stat.last}">, </span>
+                    </span>
+                </td>
+                <td th:text="*{journal.name}">Шаблонный журнал</td>
+                <td>
+                    <a th:href="@{/articles/edit/{id}(id=*{id})}" th:text="#{edit-article-button}">Edit</a> |
+                    <form th:action="@{/articles/{id}(id=*{id})}" method="post" style="display:inline;">
+                        <input type="hidden" name="_method" value="delete" />
+                        <button type="submit" class="link-button" th:text="#{delete-article-button}">Delete</button>
+                    </form>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+
+    <p><a href="edit.html" th:href="@{/articles/new}" th:text="#{create-new-article}">Create New Article</a></p>
+</body>
+</html>

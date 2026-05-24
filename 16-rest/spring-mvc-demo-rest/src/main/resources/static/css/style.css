@@ -1,0 +1,59 @@
+table {
+    border-collapse: collapse;
+    width: 100%;
+}
+
+th, td {
+    border: 1px solid steelblue;
+    padding: 8px;
+    text-align: left;
+}
+
+th {
+    background-color: #f2f2f2;
+}
+
+a {
+    color: steelblue;
+    text-decoration: none;
+}
+
+a:hover {
+    text-decoration: underline;
+}
+
+.form-row {
+    margin-left: 5px;
+    margin-top: 10px;
+    margin-bottom: 10px;
+}
+
+.form-row > input, .form-row > select {
+    width: 200px;
+}
+
+.form-row select[multiple] {
+    height: 100px;
+}
+
+/* Стилизация кнопки удаления под ссылку */
+.link-button {
+    background: none;
+    border: none;
+    color: steelblue;
+    text-decoration: none;
+    cursor: pointer;
+    font: inherit;
+}
+
+.link-button:hover {
+    text-decoration: underline;
+}
+
+.error-text {
+    color: red;
+}
+
+h1 {
+    color: #197b62;
+}

@@ -1,0 +1,7 @@
+demo:
+  locale: en
+  student: Modern Runtime Student
+  meta:
+    source: boot4-runtime
+feature:
+  notify: false

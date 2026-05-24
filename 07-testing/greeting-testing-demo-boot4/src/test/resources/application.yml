@@ -1,0 +1,7 @@
+demo:
+  locale: ru
+  student: Modern Test Student
+  meta:
+    source: boot4-test-resources
+feature:
+  notify: false

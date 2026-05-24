@@ -1,0 +1,15 @@
+spring:
+  application:
+    name: grpc-client
+  main:
+    web-application-type: none
+
+course:
+  grpc:
+    host: localhost
+    port: 9090
+
+logging:
+  level:
+    root: WARN
+

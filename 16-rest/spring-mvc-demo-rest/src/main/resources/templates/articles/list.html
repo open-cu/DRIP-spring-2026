@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<!--suppress HtmlUnknownAttribute, HtmlRequiredLangAttribute -->
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Articles</title>
+    <link rel="stylesheet" href="../../static/css/style.css" th:href="@{/css/style.css}" />
+</head>
+<body>
+    <h1>All Articles</h1>
+
+    <p><a href="edit.html" th:href="@{/articles/new}">Create New Article</a></p>
+    <p>
+        <a href="../authors/list.html" th:href="@{/authors}">Go to Authors</a>
+        |
+        <a href="../journals/list.html" th:href="@{/journals}">Go to Journals</a>
+    </p>
+
+    <table id="articles-table">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Title</th>
+                <th>Author(s)</th>
+                <th>Journal</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody id="articles-body">
+            <!-- Articles will be populated via fetch -->
+        </tbody>
+    </table>
+
+    <p><a href="edit.html" th:href="@{/articles/new}">Create New Article</a></p>
+
+    <script th:src="@{/js/articles.js}"></script>
+</body>
+</html>

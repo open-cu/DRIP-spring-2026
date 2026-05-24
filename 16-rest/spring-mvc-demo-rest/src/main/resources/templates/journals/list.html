@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<!--suppress HtmlUnknownAttribute, HtmlRequiredLangAttribute -->
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Journals</title>
+    <link rel="stylesheet" href="../../static/css/style.css" th:href="@{/css/style.css}" />
+</head>
+<body>
+    <h1>All Journals</h1>
+
+    <p><a href="../articles/list.html" th:href="@{/articles}">Back to Articles List</a></p>
+
+    <table id="journals-table">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Name</th>
+            </tr>
+        </thead>
+        <tbody id="journals-body">
+            <!-- Journals will be populated via fetch -->
+        </tbody>
+    </table>
+
+    <p><a href="../articles/list.html" th:href="@{/articles}">Back to Articles List</a></p>
+
+    <script th:src="@{/js/journals.js}"></script>
+</body>
+</html>

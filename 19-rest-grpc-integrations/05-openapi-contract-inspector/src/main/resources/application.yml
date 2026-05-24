@@ -1,0 +1,12 @@
+spring:
+  application:
+    name: openapi-contract-inspector
+  main:
+    web-application-type: none
+
+openapi:
+  source: classpath:/openapi/course-api.yaml
+
+logging:
+  level:
+    root: WARN

@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<!--suppress HtmlUnknownAttribute, HtmlRequiredLangAttribute -->
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title th:text="${action == 'create' ? 'Create Article' : 'Edit Article'}"></title>
+    <link rel="stylesheet" href="../../static/css/style.css" th:href="@{/css/style.css}" />
+</head>
+<body>
+    <h1 th:text="${action == 'create' ? 'Create New Article' : 'Edit Article'}">Article Edit Form</h1>
+
+    <p><a href="list.html" th:href="@{/articles}">Back to Articles List</a></p>
+
+    <form action="list.html" th:action="@{/articles}" th:method="post" th:object="${article}">
+        <input type="hidden" th:field="*{id}" />
+        <div class = "form-row">
+            <label for="title">Title:</label>
+            <br/>
+            <input type="text" id="title" value="Шаблонная статья" th:field="*{title}" required />
+        </div>
+        <div class = "form-row">
+            <label for="authors">Authors (select multiple):</label>
+            <br/>
+            <!--Используется th:name, чтобы th:field не перебивал th:selected -->
+            <select id="authors" th:name="authors" multiple required>
+                <option th:each="author : ${authors}"
+                        th:value="${author.id}"
+                        th:text="${author.name}"
+                        th:selected="${article.authors != null and #lists.contains(article.authors, author)}">
+                    Шаблонный автор
+                </option>
+            </select>
+        </div>
+        <div class = "form-row">
+            <label for="journal">Journal:</label>
+            <br/>
+            <select id="journal" th:name="journal" required>
+                <option th:each="journal : ${journals}"
+                        th:value="${journal.id}"
+                        th:text="${journal.name}"
+                        th:selected="${article.journal != null && article.journal.equals(journal)}">
+                    Шаблонный журнал
+                </option>
+            </select>
+        </div>
+        <button type="submit">Save</button>
+    </form>
+    <p><a href="list.html" th:href="@{/articles}">Back to Articles List</a></p>
+</body>
+</html>
